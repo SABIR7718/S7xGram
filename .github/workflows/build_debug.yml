@@ -57,6 +57,12 @@ jobs:
           mapsApiKey=${{ secrets.MAPS_API_KEY || '' }}
           EOF
 
+      - name: Debug local.properties
+        run: |
+          echo "=== local.properties ==="
+          cat local.properties
+          echo "===="
+
       - name: Configure Gradle properties
         run: |
           mkdir -p ~/.gradle
