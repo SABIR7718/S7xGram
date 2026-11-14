@@ -61,6 +61,10 @@ jobs:
           android.native.buildOutput=verbose
           EOF
 
+      - name: Set CMake parallelism to 1
+        run: |
+          echo "CMAKE_BUILD_PARALLEL_LEVEL=1" >> $GITHUB_ENV
+
       - name: Create dummy google-services.json (required by google-services plugin)
         run: |
           cat > TMessagesProj_App/google-services.json << 'EOF'
