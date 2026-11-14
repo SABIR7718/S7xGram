@@ -1,0 +1,154 @@
+name: Build Debug APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_id:
+        description: 'Telegram API ID (from my.telegram.org)'
+        required: true
+      api_hash:
+        description: 'Telegram API Hash (from my.telegram.org)'
+        required: true
+
+jobs:
+  build:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+    env:
+      JAVA_VERSION: '21'
+      GRADLE_JVM_ARGS: '-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC'
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            build-tools;34.0.0
+            ndk;26.1.10909125
+            platforms;android-34
+            cmake;3.22.1
+
+      - name: Configure Gradle properties
+        run: |
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/gradle.properties << 'EOF'
+          org.gradle.caching=true
+          org.gradle.parallel=true
+          org.gradle.jvmargs=${{ env.GRADLE_JVM_ARGS }}
+          android.native.buildOutput=verbose
+          EOF
+
+      - name: Create local.properties with secrets
+        run: |
+          cat > local.properties << 'EOF'
+          sdk.dir=${{ env.ANDROID_SDK_ROOT }}
+          apiId=${{ github.event.inputs.api_id || secrets.API_ID }}
+          apiHash=${{ github.event.inputs.api_hash || secrets.API_HASH }}
+          helperBotId=${{ secrets.HELPER_BOT_ID || '' }}
+          helperBotUsername=${{ secrets.HELPER_BOT_USERNAME || '' }}
+          sentryDsn=${{ secrets.SENTRY_DSN || '' }}
+          mapsApiKey=${{ secrets.MAPS_API_KEY || '' }}
+          storeFile=debug.keystore
+          storePassword=android
+          keyAlias=androiddebugkey
+          keyPassword=android
+          EOF
+
+      - name: Generate debug keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US" \
+            -storepass android -keypass android
+
+      - name: Create dummy google-services.json (required by google-services plugin)
+        run: |
+          cat > TMessagesProj_App/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "123456789",
+              "project_id": "s7xgram-debug",
+              "storage_bucket": "s7xgram-debug.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:123456789:android:abcdef123456",
+                "android_client_info": {
+                  "package_name": "tw.nekomimi.nekogram.beta"
+                }
+              },
+              "oauth_client": [],
+              "api_key": [{
+                "current_key": "dummy-api-key"
+              }],
+              "services": {
+                "analytics_service": {"status": 1},
+                "appinvite_service": {"status": 1, "other_platform_oauth_client": []},
+                "ads_service": {"status": 1}
+              }
+            }],
+            "configuration_version": "1"
+          }
+          EOF
+
+      - name: Create dummy sentry.properties
+        run: |
+          echo "defaults.url=https://sentry.io" > sentry.properties
+          echo "defaults.org=s7xgram" >> sentry.properties
+          echo "defaults.project=s7xgram" >> sentry.properties
+          echo "auth.token=dummy" >> sentry.properties
+
+      - name: Build Debug APK
+        run: |
+          ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace
+
+      - name: Find and rename debug APKs
+        run: |
+          mkdir -p debug-apks
+          find TMessagesProj_App/build/outputs/apk/debug -name "*.apk" -exec cp {} debug-apks/ \;
+          for f in debug-apks/*.apk; do
+            newname="S7xGram-$(basename "$f")"
+            mv "$f" "debug-apks/$newname"
+          done
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: S7xGram-debug-apks
+          path: debug-apks/*.apk
+          retention-days: 30
+
+      - name: Build info
+        run: |
+          echo "Build completed!"
+          echo "APKs available at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "Required secrets for future builds (set in repo Settings > Secrets > Actions):"
+          echo "  API_ID      - Your Telegram API ID (get at https://my.telegram.org)"
+          echo "  API_HASH    - Your Telegram API Hash (get at https://my.telegram.org)"
+          echo "  HELPER_BOT_ID      (optional)"
+          echo "  HELPER_BOT_USERNAME (optional)"
+          echo "  SENTRY_DSN          (optional)"
+          echo "  MAPS_API_KEY        (optional)"
+
