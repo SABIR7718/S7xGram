@@ -63,6 +63,7 @@ jobs:
           cat > ~/.gradle/gradle.properties << 'EOF'
           org.gradle.caching=true
           org.gradle.parallel=true
+          org.gradle.workers.max=1
           org.gradle.jvmargs=${{ env.GRADLE_JVM_ARGS }}
           android.native.buildOutput=verbose
           EOF
