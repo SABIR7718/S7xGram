@@ -2,13 +2,6 @@ name: Build Debug APK
 
 on:
   workflow_dispatch:
-    inputs:
-      api_id:
-        description: 'Telegram API ID (from my.telegram.org)'
-        required: true
-      api_hash:
-        description: 'Telegram API Hash (from my.telegram.org)'
-        required: true
 
 jobs:
   build:
@@ -19,6 +12,12 @@ jobs:
 
     env:
       GRADLE_JVM_ARGS: '-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC'
+      API_ID: ${{ secrets.API_ID }}
+      API_HASH: ${{ secrets.API_HASH }}
+      HELPER_BOT_ID: ${{ secrets.HELPER_BOT_ID }}
+      HELPER_BOT_USERNAME: ${{ secrets.HELPER_BOT_USERNAME }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
 
     steps:
       - name: Checkout with submodules
@@ -49,12 +48,12 @@ jobs:
         run: |
           cat > local.properties << 'EOF'
           sdk.dir=${{ env.ANDROID_SDK_ROOT }}
-          apiId=${{ github.event.inputs.api_id || secrets.API_ID }}
-          apiHash=${{ github.event.inputs.api_hash || secrets.API_HASH }}
-          helperBotId=${{ secrets.HELPER_BOT_ID || '' }}
-          helperBotUsername=${{ secrets.HELPER_BOT_USERNAME || '' }}
-          sentryDsn=${{ secrets.SENTRY_DSN || '' }}
-          mapsApiKey=${{ secrets.MAPS_API_KEY || '' }}
+          apiId=${{ env.API_ID }}
+          apiHash=${{ env.API_HASH }}
+          helperBotId=${{ env.HELPER_BOT_ID }}
+          helperBotUsername=${{ env.HELPER_BOT_USERNAME }}
+          sentryDsn=${{ env.SENTRY_DSN }}
+          mapsApiKey=${{ env.MAPS_API_KEY }}
           EOF
 
       - name: Debug local.properties
