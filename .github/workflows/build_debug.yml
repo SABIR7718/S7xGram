@@ -38,31 +38,16 @@ jobs:
         run: |
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
 
-      - name: Write secrets to temp files
-        run: |
-          echo "33911617" > /tmp/api_id.txt
-          echo "baa09a846876a97c2687360c149d4447" > /tmp/api_hash.txt
-          echo "" > /tmp/helper_bot_id.txt
-          echo "" > /tmp/helper_bot_username.txt
-          echo "" > /tmp/sentry_dsn.txt
-          echo "" > /tmp/maps_api_key.txt
-
       - name: Create local.properties with secrets
         run: |
-          API_ID=$(cat /tmp/api_id.txt)
-          API_HASH=$(cat /tmp/api_hash.txt)
-          HELPER_BOT_ID=$(cat /tmp/helper_bot_id.txt)
-          HELPER_BOT_USERNAME=$(cat /tmp/helper_bot_username.txt)
-          SENTRY_DSN=$(cat /tmp/sentry_dsn.txt)
-          MAPS_API_KEY=$(cat /tmp/maps_api_key.txt)
-          cat > local.properties << EOF
-          sdk.dir=\${ANDROID_SDK_ROOT}
-          apiId=${API_ID}
-          apiHash=${API_HASH}
-          helperBotId=${HELPER_BOT_ID}
-          helperBotUsername=${HELPER_BOT_USERNAME}
-          sentryDsn=${SENTRY_DSN}
-          mapsApiKey=${MAPS_API_KEY}
+          cat > local.properties << 'EOF'
+          sdk.dir=${ANDROID_SDK_ROOT}
+          apiId=33911617
+          apiHash=baa09a846876a97c2687360c149d4447
+          helperBotId=0
+          helperBotUsername=
+          sentryDsn=
+          mapsApiKey=
           EOF
 
       - name: Configure Gradle properties
