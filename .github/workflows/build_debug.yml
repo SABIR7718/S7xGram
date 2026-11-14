@@ -38,23 +38,25 @@ jobs:
         run: |
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
 
-      - name: Create local.properties with secrets
-        env:
-          API_ID: ${{ secrets.API_ID }}
-          API_HASH: ${{ secrets.API_HASH }}
-          HELPER_BOT_ID: ${{ secrets.HELPER_BOT_ID }}
-          HELPER_BOT_USERNAME: ${{ secrets.HELPER_BOT_USERNAME }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+      - name: Write secrets to temp files
         run: |
-          cat > local.properties << EOF
+          echo "${{ secrets.API_ID }}" > /tmp/api_id.txt
+          echo "${{ secrets.API_HASH }}" > /tmp/api_hash.txt
+          echo "${{ secrets.HELPER_BOT_ID }}" > /tmp/helper_bot_id.txt
+          echo "${{ secrets.HELPER_BOT_USERNAME }}" > /tmp/helper_bot_username.txt
+          echo "${{ secrets.SENTRY_DSN }}" > /tmp/sentry_dsn.txt
+          echo "${{ secrets.MAPS_API_KEY }}" > /tmp/maps_api_key.txt
+
+- name: Create local.properties with secrets
+        run: |
+          cat > local.properties << 'EOF'
           sdk.dir=${ANDROID_SDK_ROOT}
-          apiId=${API_ID}
-          apiHash=${API_HASH}
-          helperBotId=${HELPER_BOT_ID}
-          helperBotUsername=${HELPER_BOT_USERNAME}
-          sentryDsn=${SENTRY_DSN}
-          mapsApiKey=${MAPS_API_KEY}
+          apiId=$(cat /tmp/api_id.txt)
+          apiHash=$(cat /tmp/api_hash.txt)
+          helperBotId=$(cat /tmp/helper_bot_id.txt)
+          helperBotUsername=$(cat /tmp/helper_bot_username.txt)
+          sentryDsn=$(cat /tmp/sentry_dsn.txt)
+          mapsApiKey=$(cat /tmp/maps_api_key.txt)
           EOF
 
       - name: Debug local.properties
