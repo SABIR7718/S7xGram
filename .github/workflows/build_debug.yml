@@ -16,11 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
-      attestations: write
 
     env:
-      JAVA_VERSION: '21'
       GRADLE_JVM_ARGS: '-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC'
 
     steps:
@@ -38,13 +35,17 @@ jobs:
           cache: 'gradle'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: |
             build-tools;34.0.0
             ndk;26.1.10909125
             platforms;android-34
             cmake;3.22.1
+
+      - name: Accept Android licenses
+        run: |
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
 
       - name: Configure Gradle properties
         run: |
@@ -140,6 +141,7 @@ jobs:
           retention-days: 30
 
       - name: Build info
+        if: always()
         run: |
           echo "Build completed!"
           echo "APKs available at: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
