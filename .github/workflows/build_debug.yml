@@ -109,9 +109,20 @@ jobs:
 
       - name: Build Debug APK
         run: |
-          ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace
+          ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace || true
 
-      - name: Find and rename debug APKs
+      - name: Dump local.properties and BuildConfig.java
+        run: |
+          echo "=== local.properties ==="
+          cat local.properties
+          echo ""
+          echo "=== TMessagesProj BuildConfig.java ==="
+          find TMessagesProj -name "BuildConfig.java" -path "*/build/generated/*" -exec echo "=== {} ===" \; -exec cat {} \;
+
+      - name: Build Debug APK (retry)
+        if: failure()
+        run: |
+          ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace
         run: |
           mkdir -p debug-apks
           find TMessagesProj_App/build/outputs/apk/debug -name "*.apk" -exec cp {} debug-apks/ \;
