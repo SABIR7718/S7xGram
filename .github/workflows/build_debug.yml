@@ -119,10 +119,8 @@ jobs:
           echo "=== TMessagesProj BuildConfig.java ==="
           find TMessagesProj -name "BuildConfig.java" -path "*/build/generated/*" -exec echo "=== {} ===" \; -exec cat {} \;
 
-      - name: Build Debug APK (retry)
-        if: failure()
-        run: |
-          ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace
+      - name: Find and rename debug APKs
+        if: success()
         run: |
           mkdir -p debug-apks
           find TMessagesProj_App/build/outputs/apk/debug -name "*.apk" -exec cp {} debug-apks/ \;
