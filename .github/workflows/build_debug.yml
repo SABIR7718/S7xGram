@@ -12,12 +12,6 @@ jobs:
 
     env:
       GRADLE_JVM_ARGS: '-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC'
-      API_ID: ${{ secrets.API_ID }}
-      API_HASH: ${{ secrets.API_HASH }}
-      HELPER_BOT_ID: ${{ secrets.HELPER_BOT_ID }}
-      HELPER_BOT_USERNAME: ${{ secrets.HELPER_BOT_USERNAME }}
-      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
 
     steps:
       - name: Checkout with submodules
@@ -45,15 +39,22 @@ jobs:
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
 
       - name: Create local.properties with secrets
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          HELPER_BOT_ID: ${{ secrets.HELPER_BOT_ID }}
+          HELPER_BOT_USERNAME: ${{ secrets.HELPER_BOT_USERNAME }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
         run: |
-          cat > local.properties << 'EOF'
-          sdk.dir=${{ env.ANDROID_SDK_ROOT }}
-          apiId=${{ env.API_ID }}
-          apiHash=${{ env.API_HASH }}
-          helperBotId=${{ env.HELPER_BOT_ID }}
-          helperBotUsername=${{ env.HELPER_BOT_USERNAME }}
-          sentryDsn=${{ env.SENTRY_DSN }}
-          mapsApiKey=${{ env.MAPS_API_KEY }}
+          cat > local.properties << EOF
+          sdk.dir=${ANDROID_SDK_ROOT}
+          apiId=${API_ID}
+          apiHash=${API_HASH}
+          helperBotId=${HELPER_BOT_ID}
+          helperBotUsername=${HELPER_BOT_USERNAME}
+          sentryDsn=${SENTRY_DSN}
+          mapsApiKey=${MAPS_API_KEY}
           EOF
 
       - name: Debug local.properties
