@@ -45,16 +45,6 @@ jobs:
         run: |
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
 
-      - name: Configure Gradle properties
-        run: |
-          mkdir -p ~/.gradle
-          cat > ~/.gradle/gradle.properties << 'EOF'
-          org.gradle.caching=true
-          org.gradle.parallel=true
-          org.gradle.jvmargs=${{ env.GRADLE_JVM_ARGS }}
-          android.native.buildOutput=verbose
-          EOF
-
       - name: Create local.properties with secrets
         run: |
           cat > local.properties << 'EOF'
@@ -65,21 +55,17 @@ jobs:
           helperBotUsername=${{ secrets.HELPER_BOT_USERNAME || '' }}
           sentryDsn=${{ secrets.SENTRY_DSN || '' }}
           mapsApiKey=${{ secrets.MAPS_API_KEY || '' }}
-          storeFile=debug.keystore
-          storePassword=android
-          keyAlias=androiddebugkey
-          keyPassword=android
           EOF
 
-      - name: Generate debug keystore
+      - name: Configure Gradle properties
         run: |
-          keytool -genkeypair -v \
-            -keystore debug.keystore \
-            -alias androiddebugkey \
-            -keyalg RSA -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -storepass android -keypass android
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/gradle.properties << 'EOF'
+          org.gradle.caching=true
+          org.gradle.parallel=true
+          org.gradle.jvmargs=${{ env.GRADLE_JVM_ARGS }}
+          android.native.buildOutput=verbose
+          EOF
 
       - name: Create dummy google-services.json (required by google-services plugin)
         run: |
