@@ -156,3 +156,5 @@ jobs:
           echo "  SENTRY_DSN          (optional)"
           echo "  MAPS_API_KEY        (optional)"
 
+
+# workflow_dispatch trigger test
