@@ -113,6 +113,15 @@ jobs:
 
       - name: Build Debug APK
         run: |
+          ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace || true
+
+      - name: Dump generated BuildConfig.java
+        run: |
+          find . -name "BuildConfig.java" -path "*/build/generated/*" -exec echo "=== {} ===" \; -exec cat {} \;
+
+      - name: Build Debug APK (retry if needed)
+        if: failure()
+        run: |
           ./gradlew :TMessagesProj_App:assembleDebug --no-daemon --stacktrace
 
       - name: Find and rename debug APKs
