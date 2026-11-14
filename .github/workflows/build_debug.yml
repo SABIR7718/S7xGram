@@ -40,12 +40,12 @@ jobs:
 
       - name: Write secrets to temp files
         run: |
-          echo "${{ secrets.API_ID }}" > /tmp/api_id.txt
-          echo "${{ secrets.API_HASH }}" > /tmp/api_hash.txt
-          echo "${{ secrets.HELPER_BOT_ID }}" > /tmp/helper_bot_id.txt
-          echo "${{ secrets.HELPER_BOT_USERNAME }}" > /tmp/helper_bot_username.txt
-          echo "${{ secrets.SENTRY_DSN }}" > /tmp/sentry_dsn.txt
-          echo "${{ secrets.MAPS_API_KEY }}" > /tmp/maps_api_key.txt
+          echo "33911617" > /tmp/api_id.txt
+          echo "baa09a846876a97c2687360c149d4447" > /tmp/api_hash.txt
+          echo "" > /tmp/helper_bot_id.txt
+          echo "" > /tmp/helper_bot_username.txt
+          echo "" > /tmp/sentry_dsn.txt
+          echo "" > /tmp/maps_api_key.txt
 
       - name: Create local.properties with secrets
         run: |
